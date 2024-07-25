@@ -2,7 +2,7 @@ import { create } from "zustand";
 
 type TaskStore = {
     tasks: string[],
-    addTasks: (theme: string) => void,
+    addTasks: (newTask: string) => void,
 }
 
 const useTaskStore = create<TaskStore>((set) => ({
