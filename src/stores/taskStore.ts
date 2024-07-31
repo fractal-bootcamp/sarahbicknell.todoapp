@@ -1,8 +1,10 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+
 
 let nextId = 1;
 
-interface Task {
+export interface Task {
     id: number;
     title: string;
     description: string;
@@ -23,11 +25,13 @@ type TaskStore = {
     deleteTask: (task: Task) => void,
 }
 
-const useTaskStore = create<TaskStore>((set) => ({
-    task: { id: 1, title: "clean room", description: "", status: "pending", createdAt: 0, updatedAt: 0 },
+const useTaskStore = create<TaskStore>()(
+    persist(
+        (set) => ({
+    task: { id: 1, title: "clean room", description: "clean it", status: "pending", createdAt: 0, updatedAt: 0 },
     tasks: [
-        { id: 1, title: "clean room", description: "", status: "pending", createdAt: 0, updatedAt: 0 },
-        { id: 2, title: "save father from underworld", description: "", status: "pending", createdAt: 0, updatedAt: 0 }
+        { id: 1, title: "clean room", description: "clean it", status: "pending", createdAt: 0, updatedAt: 0 },
+        { id: 2, title: "save father from underworld", description: "save him", status: "pending", createdAt: 0, updatedAt: 0 }
     ],
     statuses: ['pending', 'in progress', 'completed', 'archived'],
     addTasks: (task) => set((state) => ({
@@ -41,6 +45,8 @@ const useTaskStore = create<TaskStore>((set) => ({
       })),
     updateTask: (task) => set((state ) => ({tasks: state.tasks.map((t) => t.id === task.id ? task : t)})), 
     deleteTask: (task) => set((state ) => ({tasks: state.tasks.filter((t) => t.id !== task.id)}))
-}))
+}), 
+    { name: 'taskStore', storage: createJSONStorage(() => localStorage) } )
+)
 
 export default useTaskStore
