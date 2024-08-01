@@ -4,10 +4,10 @@ import useThemeStore from './stores/themeStore'
 import useTaskStore from './stores/taskStore'
 import useUIStore from './stores/UIStore'
 import {Task as TaskType} from './stores/taskStore'
-import {ChevronDown, ChevronUp, Sword, Swords} from 'lucide-react'
+import {ChevronDown, ChevronUp, Sword, Swords, Square, SquareCheck, ShieldCheck, ShieldPlus, Pen, Check} from 'lucide-react'
 
 const THEMES = {
-  order: "bg-white text-black",
+  order: "bg-amber-50 text-black",
   chaos: "bg-black text-white"
 }
 
@@ -38,42 +38,126 @@ function AddTaskForm() {
         </form> 
       )} 
       {showForm || (
-      <button onClick={() => setShowForm(!showForm)} className='border border-black p-2 w-fit'> Add Task </button> )}
+      <button className="mb-2 text-4xl border border-black w-[40px]" onClick={() => setShowForm(!showForm)} > + </button> )}
     </>
   )
 }
 
 function TaskTabs(){
-  const {statuses} = useTaskStore()
-  const {selectedStatus, setSelectedStatus} = useUIStore()
+  const {UIstatuses, selectedStatus, setSelectedStatus} = useUIStore()
   return(
     <div className="flex flex-row"> 
-    {statuses.map((status) => (
-      <button className="flex flex-row border border-black p-2 mb-2" key={status} onClick={()=> setSelectedStatus(status)}> {status} {selectedStatus === status? <ChevronDown /> : <ChevronUp />} </button> 
+    {UIstatuses.map((status) => (
+      <button className="flex flex-row border border-black p-2 mb-2 h-[46px]" key={status} onClick={()=> setSelectedStatus(status)}> {status} {selectedStatus === status? <ChevronDown /> : <ChevronUp />} </button> 
     ))}
     </div>
   )
-
 }
 
 function Task({task}: {task: TaskType}) {
-  return(
-    <div className='border border-black mb-2'>   
-      <div className="flex flex-row justify-between">
-        <div className='font-semibold'> {task.title} </div>
-        <div className='flex flex-row'>
-          <button className=" hover:text-slate-500 text-black hover:cursor-pointer rounded-md"> {task.status === 'pending'? <Sword /> : < Swords />} </button> 
-          <div className=" hover:text-slate-500 text-black hover:cursor-pointer rounded-md"> <Sword /> </div>
-          <div className=" hover:text-slate-500 text-black hover:cursor-pointer rounded-md"> <Sword /> </div>
-          <div className=" hover:text-slate-500 text-black hover:cursor-pointer rounded-md"> <Sword /> </div>
+  const { updateTask, statuses } = useTaskStore()
+  const [editing, setEditing] = useState(false)
+  const [editedTask, setEditedTask] = useState(task)
 
+  function toggleComplete(){
+    if (task.status === 'completed') {
+      updateTask({...task, status: 'pending'})
+    } else {
+      updateTask({...task, status: 'completed'})
+    }
+  }
+
+  const ICONS = {
+    "pending": <Sword />,
+    "in progress": <Swords/>,
+    "completed": <ShieldCheck />,
+    "archived": <ShieldPlus />
+  }
+
+  function handleEditChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
+    const { name, value } = e.target;
+    setEditedTask(prev => ({ ...prev, [name]: value }));
+  }
+
+  function handleSave() {
+    updateTask(editedTask);
+    setEditing(false);
+  }
+
+  function handleCancel() {
+    setEditedTask(task);
+    setEditing(false);
+  }
+
+  function statusToggle(){
+    const currentIndex = statuses.indexOf(task.status);
+    const nextIndex = (currentIndex + 1) % statuses.length;
+    updateTask({...task, status: statuses[nextIndex]});
+  }
+
+  return(
+    <div className='border border-black mb-2'>  
+      <div className="flex flex-row justify-between">
+        <div className="flex flex-row gap-3 px-2">
+          <div className="self-center" onClick={toggleComplete}> 
+            {task.status === 'pending' ? <Square /> : <SquareCheck />} 
+          </div>
+          <div className="flex flex-col"> 
+            {editing ? (
+              <>
+                <div className="flex flex-row gap-2">
+                  <div className="flex flex-col">
+                    <input
+                      type="text"
+                      name="title"
+                      value={editedTask.title}
+                      onChange={handleEditChange}
+                      className="font-semibold mb-2 border border-gray-300 p-1"
+                    />
+                    <textarea
+                      name="description"
+                      value={editedTask.description}
+                      onChange={handleEditChange}
+                      className="mb-2 border border-gray-300 p-1"
+                    />
+                    <select 
+                      name="status"
+                      value={editedTask.status}
+                      onChange={handleEditChange}
+                      className='border border-black p-2 my-2 w-fit'
+                    >
+                      {statuses.map((status) => (
+                        <option key={status} value={status}>{status}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div> 
+                    <div className="flex gap-2">
+                      <button onClick={handleSave} title="Save" className="text-black hover:text-green-800"><Check /></button>
+                      <button onClick={handleCancel} title="Cancel" className="text-black hover:text-red-800"> X </button>
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex flex-row gap-2">
+                  <div className='font-semibold'>{task.title}</div>
+                  <button onClick={() => setEditing(true)}><Pen size='16px' /></button>
+                </div>
+                <div>{task.description}</div>
+              </>
+            )}
+          </div> 
+        </div>
+        <div className='flex flex-row justify-end px-4'>
+          <button onClick={statusToggle} className="hover:text-slate-500 text-black hover:cursor-pointer rounded-md">
+            {ICONS[task.status]}
+          </button> 
         </div> 
       </div>
-      <div> {task.description} </div>
     </div> 
-
   )
-
 }
 
 function TaskList () {
@@ -81,7 +165,7 @@ function TaskList () {
   const {selectedStatus} = useUIStore()
   
   return(
-    <div> {tasks.filter(task => task.status === selectedStatus).map((task) => (
+    <div> {tasks.filter(task => task.status === selectedStatus || selectedStatus === 'all').map((task) => (
       <Task key={task.id} task={task} />
     ))} </div> 
   )
@@ -108,8 +192,8 @@ function App() {
   return(
     <div className={`flex flex-row items-center justify-center min-h-screen font-mono ${THEMES[theme]}`}> 
       <div className="flex flex-col">  
-        <h1 className='text-5xl pb-10'> CLEAN YOUR ROOM BUCKO </h1>
-        <div className='flex gap-2'> 
+        <h1 className='text-5xl pb-4'> CLEAN YOUR ROOM BUCKO </h1>
+        <div className='flex flex-row gap-2'> 
         <TaskTabs />
         <AddTaskForm />
 

@@ -8,12 +8,13 @@ export interface Task {
     id: number;
     title: string;
     description: string;
-    status: 'pending' | 'in_progress' | 'completed' | 'archived';
+    status: 'pending' | 'in progress' | 'completed' | 'archived';
     createdAt: number;
     updatedAt: number;
   }
 
 type NewTask = Omit<Task, 'id' | 'status' | 'createdAt' | 'updatedAt'>;
+
 
 
 type TaskStore = {
