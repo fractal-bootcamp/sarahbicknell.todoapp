@@ -70,7 +70,7 @@ function Task({task}: {task: TaskType}) {
   const ICONS = {
     "pending": <Sword />,
     "in progress": <Swords/>,
-    "completed": <ShieldCheck />,
+    "completed": <Check />,
     "archived": <ShieldPlus />
   }
 
@@ -89,11 +89,12 @@ function Task({task}: {task: TaskType}) {
     setEditing(false);
   }
 
-  function statusToggle(){
-    const currentIndex = statuses.indexOf(task.status);
-    const nextIndex = (currentIndex + 1) % statuses.length;
-    updateTask({...task, status: statuses[nextIndex]});
-  }
+  // function statusToggle(){
+  //   const currentIndex = statuses.indexOf(task.status);
+  //   const nextIndex = (currentIndex + 1) % statuses.length;
+  //   updateTask({...task, status: statuses[nextIndex] as 'pending' | 'in progress' | 'completed' | 'archived'});
+  // }
+  //might restore this later
 
   return(
     <div className='border border-black mb-2'>  
@@ -151,7 +152,7 @@ function Task({task}: {task: TaskType}) {
           </div> 
         </div>
         <div className='flex flex-row justify-end px-4'>
-          <button onClick={statusToggle} className="hover:text-slate-500 text-black hover:cursor-pointer rounded-md">
+          <button>
             {ICONS[task.status]}
           </button> 
         </div> 
