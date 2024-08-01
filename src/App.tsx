@@ -1,5 +1,5 @@
 import './App.css'
-import {useState} from 'react'
+import {useState, useEffect} from 'react'
 import useThemeStore from './stores/themeStore'
 import useTaskStore from './stores/taskStore'
 import useUIStore from './stores/UIStore'
@@ -9,6 +9,37 @@ import {ChevronDown, ChevronUp, Sword, Swords, Square, SquareCheck, ShieldPlus, 
 const THEMES = {
   order: "bg-amber-50 text-black",
   chaos: "bg-black text-white"
+}
+
+//FOR ANMIATION MOVE THIS LATER LOLL
+function FlyingDragon() {
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const flyAround = () => {
+      setPosition({
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight
+      });
+    };
+
+    const interval = setInterval(flyAround, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div style={{
+      position: 'fixed',
+      left: position.x,
+      top: position.y,
+      fontSize: '2rem',
+      transition: 'all 2s ease-in-out',
+      transform: `rotate(${Math.random() * 360}deg)`,
+      zIndex: 9999,
+    }}>
+      🐉
+    </div>
+  );
 }
 
 function AddTaskForm() {
@@ -187,21 +218,69 @@ function ThemeSelector() {
   )
 }
 
+function ChaosElement({ children }: { children: React.ReactNode }) {
+  const randomRotation = Math.random() * 360;
+  const randomX = Math.random() * 20 - 10;
+  const randomY = Math.random() * 20 - 10;
+
+  return (
+    <div style={{
+      transform: `rotate(${randomRotation}deg) translate(${randomX}px, ${randomY}px)`,
+      transition: 'all 0.5s ease-in-out',
+      display: 'inline-block',
+    }}>
+      {children}
+    </div>
+  );
+}
+
 function App() {
-  const {theme} = useThemeStore() as {theme: 'order' | 'chaos'}
+  const { theme } = useThemeStore() as { theme: 'order' | 'chaos' };
 
-  return(
-    <div className={`flex flex-row items-center justify-center min-h-screen font-mono ${THEMES[theme]}`}> 
+  const chaosStyle = theme === 'chaos' ? {
+    animation: 'shake 0.5s infinite',
+    fontFamily: 'mono',
+  } : {};
+
+  return (
+    <div className={`flex flex-row items-center justify-center min-h-screen font-mono ${THEMES[theme]}`} style={chaosStyle}> 
       <div className="flex flex-col">  
-        <h1 className='text-5xl pb-4'> CLEAN YOUR ROOM BUCKO </h1>
+        <h1 className='text-5xl pb-4'>
+          {theme === 'chaos' ? (
+            'UH OH! YOU HAVE AWOKEN THE DRAGON OF CHAOS!'
+          ) : (
+            'CLEAN YOUR ROOM BUCKO'
+          )}
+        </h1>
         <div className='flex flex-row gap-2'> 
-        <TaskTabs />
-        <AddTaskForm />
-
+          {theme === 'chaos' ? (
+            <>
+              <ChaosElement><TaskTabs /></ChaosElement>
+              <ChaosElement><AddTaskForm /></ChaosElement>
+            </>
+          ) : (
+            <>
+              <TaskTabs />
+              <AddTaskForm />
+            </>
+          )}
         </div>
-        <TaskList /> 
+        {theme === 'chaos' ? (
+          <ChaosElement><TaskList /></ChaosElement>
+        ) : (
+          <TaskList />
+        )}
         <ThemeSelector />
       </div>
+      {theme === 'chaos' && (
+        <>
+          <FlyingDragon />
+          <FlyingDragon />
+          <FlyingDragon />
+          <FlyingDragon />
+          <FlyingDragon />
+        </>
+      )}
     </div> 
   )
 }
