@@ -4,7 +4,7 @@ import useThemeStore from './stores/themeStore'
 import useTaskStore from './stores/taskStore'
 import useUIStore from './stores/UIStore'
 import {Task as TaskType} from './stores/taskStore'
-import {ChevronDown, ChevronUp, Sword, Swords, Square, SquareCheck, ShieldCheck, ShieldPlus, Pen, Check} from 'lucide-react'
+import {ChevronDown, ChevronUp, Sword, Swords, Square, SquareCheck, ShieldPlus, Pen, Check} from 'lucide-react'
 
 const THEMES = {
   order: "bg-amber-50 text-black",
